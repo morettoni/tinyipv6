@@ -1,0 +1,26 @@
+INSTALL
+=======
+ Simple, type:
+ # make install strip
+
+USE
+===
+  Syntax: add-host6 [-c] host IPv6
+
+  where:
+   -c    generate a comment string
+   host  is the host name
+   IPv6  is the IP address (in hex, short form allowed)
+
+EXAMPLE
+=======
+  Some example
+
+% ./add-host6 ip6.my.home 1::
+:ip6.my.home:28:\000\001\000\000\000\000\000\000\000\000\000\000\000\000\000\000
+
+% ./add-host6 -c ip6.my.home ::1
+# ip6.my.home AAAA 0:0:0:0:0:0:0:1
+:ip6.my.home:28:\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\001
+
+  redirect the output to your data and enjoy!

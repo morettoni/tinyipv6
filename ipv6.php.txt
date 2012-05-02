@@ -1,0 +1,83 @@
+<?
+    // take from: http://pear.php.net/package/Net_IPv6/docs/1.0.2/Net_IPv6/Net_IPv6.html
+    function Uncompress($ip) {
+        $uip = $ip;
+        $c1 = -1;
+        $c2 = -1;
+        if (false !== strpos($ip, '::') ) {
+            list($ip1, $ip2) = explode('::', $ip);
+            if(""==$ip1) {                 $c1 = -1;
+            } else {
+                $pos = 0;
+                if(0 < ($pos = substr_count($ip1, ':'))) {
+                    $c1 = $pos;
+                } else {
+                    $c1 = 0;
+                }
+            }
+            if(""==$ip2) {
+                $c2 = -1;
+            } else {
+                $pos = 0;
+                if(0 < ($pos = substr_count($ip2, ':'))) {
+                    $c2 = $pos;
+                } else {
+                    $c2 = 0;
+                }
+            }
+            if(-1 == $c1 && -1 == $c2) { // ::
+                $uip = "0:0:0:0:0:0:0:0";
+            } else if(-1==$c1) {              // ::xxx
+                $fill = str_repeat('0:', 7-$c2);
+                $uip =  str_replace('::', $fill, $uip);
+            } else if(-1==$c2) {              // xxx::
+                $fill = str_repeat(':0', 7-$c1);
+                $uip =  str_replace('::', $fill, $uip);
+            } else {                          // xxx::xxx
+                $fill = str_repeat(':0:', 6-$c2-$c1);
+                $uip =  str_replace('::', $fill, $uip);
+                $uip =  str_replace('::', ':', $uip);
+            }
+        }
+        return $uip;
+    }
+
+    $fh = fopen("./counter", "r+");
+    if ($fh) $counter = (int) fgets ($fh, 16);
+
+    if (!empty ($ipv6) && !empty ($resource)) {
+      $ip = Uncompress ($ipv6);
+      echo "IPv6 address for <i>$resource</i>: <b>$ip</b><p>\n";
+      $octet = split (":", $ip, 8);
+
+      $base = 10;
+      if ($hex == 1) $base = 16;
+
+      echo "Add this into your <i>tinydns/root/data</i>:";
+      echo "<pre>:$resource:28:";
+      for ($i = 0; $i < 8; $i++) {
+        str_pad ($octet[$i], "0", 4); 
+        printf ("\\%03d", base_convert (substr($octet[$i], 0, 2), $base, 8));
+        printf ("\\%03d", base_convert (substr($octet[$i], -2, 2), $base, 8));
+      }
+      echo "</pre><hr>\n";
+
+      $counter++;
+      if ($fh) {
+        rewind ($fh);
+        fwrite ($fh, $counter);
+      }
+    }
+    if ($fh) fclose ($fh);
+?>
+<form method="post" action="<? echo $SCRIPT_NAME; ?>">
+ <table border="0" align="center">
+  <tr><td>Domain:</td></td><td><input type="text" name="resource" value="<? echo $resource; ?>" size="35"></td></tr>
+  <tr><td>IPv6:</td><td><input type="text" name="ipv6" value="<? echo $ipv6; ?>" size="35"></td></tr>
+  <tr><td colspan=2 align="center"><input type="checkbox" name="hex" value="1" checked> Use hex values</td></tr>
+  <tr><td colspan=2 align="center"><input type="submit" value=" Get IPv6! "></td></tr>
+ </table>
+ <p align="center"><i><b><? echo $counter; ?></b> IPv6 addresses were generated with this app!</i></p>
+</form>
+<hr>
+<ADDRESS>This software was developed by <A HREF="http://morettoni.net/">Luca Morettoni</A></ADDRESS>
